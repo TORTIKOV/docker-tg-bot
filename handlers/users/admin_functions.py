@@ -21,9 +21,10 @@ async def command_add_deliveryman(message: types.Message, state: FSMContext) -> 
             await message.reply("Недостаточно авторитета для использования данной команды.")
             return
 
-        # Ask the admin to enter the Telegram ID and username of the deliveryman
-        await message.reply("Введите Telegram ID и username пользователя (Deliveryman) в формате:\n"
-                            "id: {tg_id}\nusername: {username}")
+        # Ask the admin to enter the deliveryman info
+        await message.reply("Введите данные о доставщике в формате:\n"
+                            "id: {tg_id}\nusername: {username}\ndate: {date}\n\nТут дата - день когда пользователь"
+                            " заблокируется, поэтому надоо ввести именно этот день")
 
         # Set the state to `wait_deliveryman_info` to handle the next message
         await state.set_state("wait_deliveryman_info")
@@ -33,13 +34,14 @@ async def command_add_deliveryman(message: types.Message, state: FSMContext) -> 
 
 
 # Handler to process the deliveryman info
-@dp.message_handler(state="wait_deliveryman_info")
+@dp.message_handler(state="wait_deliveryman_info", content_types=types.ContentTypes.TEXT)
 async def add_deliveryman_info(message: types.Message, state: FSMContext) -> None:
     try:
-        # Extract Telegram ID and username from the message text
+        # Extract Telegram ID, username, and date from the message text
         message_text = message.text.strip()
         tg_id = None
         username = None
+        date = None
 
         for line in message_text.split('\n'):
             key, value = line.split(':')
@@ -47,10 +49,12 @@ async def add_deliveryman_info(message: types.Message, state: FSMContext) -> Non
                 tg_id = int(value.strip())
             elif key.strip() == 'username':
                 username = value.strip()
+            elif key.strip() == 'date':
+                date = value.strip()
 
-        if tg_id is None or username is None:
+        if tg_id is None or username is None or date is None:
             await message.reply("Некорректный формат данных. Введите данные в формате:\n"
-                                "id: {tg_id}\nusername: {username}")
+                                "id: {tg_id}\nusername: {username}\ndate: {date}")
             await state.reset_state()
             return
 
@@ -65,22 +69,13 @@ async def add_deliveryman_info(message: types.Message, state: FSMContext) -> Non
             return
 
         # Add the deliveryman to the database
-        success = add_deliveryman_to_db(tg_id, username)
+        success = add_deliveryman_to_db(tg_id, username, date)
 
         if success:
-            await message.reply(f"Deliveryman с Telegram ID {tg_id} и username {username} добавлен в базу данных.")
-            deliverymen_id.append(tg_id)
-            id_string = ""
-            counter = 0
-            for id in deliverymen_id:
-                if counter % 3 == 0:
-                    id_string += '\n'
-                id_string += f"{str(id)},\t"
-                counter += 1
-            await message.answer(id_string)
-            await bot.send_message(text=f'Вам одобрен статус доставщика! Пропишите "/main_menu" и можете приступать к работе', chat_id=tg_id)
+            await message.reply(f"Доставщик с Telegram ID {tg_id}, username {username} добавлен в базу данных. Будет работать до: {date}")
+            await bot.send_message(text=f'Вам одобрен статус доставщика до {date}(не включительно)! Пропишите "/main_menu" и можете приступать к работе', chat_id=tg_id)
         else:
-            await message.reply("Не удалось добавить Deliveryman. Проверьте правильность введенных данных.")
+            await message.reply("Не удалось добавить доставщика. Проверьте правильность введенных данных.")
 
         # Reset the state after processing the message
         await state.reset_state()
@@ -94,40 +89,53 @@ async def command_update_deliveryman(message: types.Message, state: FSMContext) 
     try:
         tg_id = message.from_user.id
         moderator_id = get_active_admins()
+
         # Check if the user is an admin
         if tg_id not in moderator_id:
             await message.reply("Недостаточно авторитета для использования данной команды.")
             return
 
-        # Ask the admin to enter the Telegram ID of the deliveryman
-        await message.reply("Введите Telegram ID пользователя (Deliveryman):")
+        # Ask the admin to enter the Telegram ID and date of the deliveryman
+        await message.reply("Введите данные для обновления Deliveryman в формате:\n"
+                            "id: {tg_id}\ndate: {date}.\n\nТут дата - день когда пользователь заблокируется,"
+                            " поэтому надоо ввести именно этот день")
 
-        # Set the state to `wait_deliveryman_tg_id` to handle the next message
-        await state.set_state("wait_deliveryman_tg_id_update")
+        # Set the state to `wait_deliveryman_info_update` to handle the next message
+        await state.set_state("wait_deliveryman_info_update")
 
     except Exception as err:
         logging.exception(err)
 
 
-@dp.message_handler(state="wait_deliveryman_tg_id_update")
-async def update_deliveryman_tg_id(message: types.Message, state: FSMContext) -> None:
+# Handler to process the deliveryman info for updating
+@dp.message_handler(state="wait_deliveryman_info_update", content_types=types.ContentTypes.TEXT)
+async def update_deliveryman_info(message: types.Message, state: FSMContext) -> None:
     try:
-        # Get the entered Telegram ID from the message
-        deliveryman_tg_id = message.text.strip()
+        # Extract Telegram ID and date from the message text
+        message_text = message.text.strip()
+        deliveryman_tg_id = None
+        date = None
 
-        # Check if the provided Telegram ID belongs to an existing deliveryman
-        if not check_if_deliveryman(deliveryman_tg_id):
-            await message.reply("Пользователь не найден в базе Deliverymen.")
+        for line in message_text.split('\n'):
+            key, value = line.split(':')
+            if key.strip() == 'id':
+                deliveryman_tg_id = int(value.strip())
+            elif key.strip() == 'date':
+                date = value.strip()
+
+        if deliveryman_tg_id is None or date is None:
+            await message.reply("Некорректный формат данных. Введите данные в формате:\n"
+                                "id: {tg_id}\ndate: {date}")
             await state.reset_state()
             return
 
-        # Update the deliveryman's information in the database
-        if update_deliveryman(deliveryman_tg_id):
+        # Update the deliveryman's information in the database using the update_deliveryman function
+        if update_deliveryman(deliveryman_tg_id, date):
             await message.reply("Информация о Deliveryman успешно обновлена.")
         else:
             await message.reply("Ошибка при обновлении информации Deliveryman.")
 
-        # Reset the state to None to complete the flow
+        # Reset the state after processing the message
         await state.reset_state()
 
     except Exception as err:
@@ -227,10 +235,11 @@ async def update_deliveryman_tg_id(message: types.Message, state: FSMContext) ->
         # Update the deliveryman's information in the database
         if ban_deliveryman(deliveryman_tg_id):
             await message.reply(f"Пользователь {deliveryman_tg_id} забанен")
-            await bot.send_message(deliveryman_tg_id, "Вам бан. Пишите в ЦПП")
+            await bot.send_message(deliveryman_tg_id, "Возможность доставлять заказы прекращена.\n"
+                                                      "Для выяснения обстоятельств пишите -> @OnDaWayHC")
             await state.reset_state()
             for admin_tg_id in admin_id:
-                await bot.send_message(admin_tg_id, f"Deliverymen statuses have been updated:\t{deliveryman_tg_id}")
+                await bot.send_message(admin_tg_id, f"Пользователь {deliveryman_tg_id} заблокирован.")
         else:
             await message.reply("Ошибка при бане.")
 

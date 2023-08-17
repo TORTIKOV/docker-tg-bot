@@ -14,12 +14,11 @@ async def command_deliverer(message: types.Message) -> None:
         if check_tgid_in_db(tgid):
             await message.answer(f'Ты собираешься стать доставщиком!\nВвиду того, что ты будешь это делать не '
                                  f'бесплатно, '
-                             f'тебе придется немного поделиться со мной.\nSber:')
-            await message.answer(f'2202 2010 7411 2836')
-            await message.answer(f'Подкинь сюда 100 шейкелей.\n'
-                             f'Как шейкели придут, я лично добавлю тебя в список доставщиков и ты сможешь спокойно '
-                             f'лутать свое золотишко.')
-            await message.answer(f'Для связи с клиентами, тебе нужно скинуть в комментариях к платежу свой TG ID и username\n'
+                             f'тебе придется немного поделиться со мной.')
+            await message.answer(f'Но не в этом месяце!')
+            #await message.answer(f'2202 2010 7411 2836')
+            #await message.answer(f'Подкинь сюда 100 шейкелей.\n' f'Как шейкели придут, я лично добавлю тебя в список доставщиков и ты сможешь спокойно 'f'лутать свое золотишко.')
+            await message.answer(f'Для связи с клиентами, нам нужно знать твой TG ID и username\n'
                              f'Ткни на кнопку ниже и я тебе их пришлю', reply_markup=types.ReplyKeyboardMarkup(row_width=1).add(types.KeyboardButton(text='Прислать'), types.KeyboardButton(text="Главное меню")))
         else:
             await message.answer(f'Сначала надо зарегестрироваться!', reply_markup=types.ReplyKeyboardMarkup().add(types.KeyboardButton(text='Регистрация', web_app=WebAppInfo(url='https://charming-cucurucho-1beba8.netlify.app/form'))))
@@ -40,7 +39,7 @@ async def command_idGetter(message: types.Message) -> None:
                 await message.answer("Похоже, что username не установлен. Установи его в настройках и возвращайся.", reply_markup=types.ReplyKeyboardMarkup(row_width=1).add(types.KeyboardButton(text='Прислать'), types.KeyboardButton(text="Главное меню")))
                 return
 
-            await message.answer(f'Просто скопируй сообщение выше и скинь в комментарии к платежу.\n'
+            await message.answer(f'Просто скопируй сообщение выше и скинь в этот аккаунт -> @OnDaWayHC.\n'
                                  f'Как закончишь, тыкай на кнопку ниже и я пойду проверять твой запрос.\n'
                                  f'Время на обработку до 24 часов\n'
                                  f'Тыкай "Готово" и админ пойдет проверять твой запрос,'
@@ -62,7 +61,7 @@ async def command_payment(message: types.Message) -> None:
             reply_markup = types.ReplyKeyboardMarkup(row_width=1).add(types.KeyboardButton(text='Сделать заказ',
                                                                                            web_app=WebAppInfo(
                                                                                            url='https://charming-cucurucho-1beba8.netlify.app')))
-            await message.answer(f'Всё, ждем! А пока можешь сделать заказ', reply_markup=reply_markup)
+            await message.answer(f'А пока можешь сделать заказ', reply_markup=reply_markup)
 
             for admin in admin_id:
                 try:

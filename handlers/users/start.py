@@ -23,11 +23,11 @@ async def command_start(message: types.Message) -> None:
                                                                                                    url='https://charming-cucurucho-1beba8.netlify.app')),
                                                                           types.KeyboardButton(
                                                                               text='Стать доставщиком'))
-                await message.answer(f'Welcome back!', reply_markup=reply_markup)
+                await message.answer(f'С возвращением, {message.from_user.first_name}!', reply_markup=reply_markup)
 
         else:
             await message.answer(
-            f'Привет {message.from_user.first_name}!\n'
+            f'Привет, {message.from_user.first_name}!\n'
             f'Рады видеть тебя в нашем крутом телеграм боте!\n\n'
             f'Если хочешь узнать, как это работает, то тыкай сюда -> /help\n\n'
             f'Полетели регистрироваться!',

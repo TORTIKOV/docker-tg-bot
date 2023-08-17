@@ -149,22 +149,19 @@ def update_order_status(order_id, status):
         cursor.close()
 
 
-def add_deliveryman_to_db(deliveryman_tg_id, username):
+def add_deliveryman_to_db(deliveryman_tg_id, username, date):
     try:
         conn = db.connection
         cursor = conn.cursor()
 
-        # Get the current date
-        current_date = datetime.now().date()
-
-        # Calculate the work_until date (current date + 1 month)
-        work_until_date = current_date + timedelta(days=30)
+        # Parse the provided date string in DD.MM.YYYY format
+        work_until_date = datetime.strptime(date, '%d.%m.%Y').date()
 
         # Insert the deliveryman data into the database
         cursor.execute('''
             INSERT INTO "deliverymen" (tg_id, career_start, work_until, experience_month, complete, status, username)
             VALUES (%s, %s, %s, %s, %s, %s, %s)
-        ''', (deliveryman_tg_id, current_date, work_until_date, 0, 0, True, username))
+        ''', (deliveryman_tg_id, datetime.now().date(), work_until_date, 0, 0, True, username))
 
         # Commit the changes to the database
         conn.commit()
@@ -181,7 +178,7 @@ def add_deliveryman_to_db(deliveryman_tg_id, username):
         return False
 
 
-def update_deliveryman(tg_id):
+def update_deliveryman(tg_id, date):
     try:
         conn = db.connection
         cursor = conn.cursor()
@@ -197,9 +194,8 @@ def update_deliveryman(tg_id):
             WHERE tg_id = %s
         ''', (tg_id,))
 
-        # Calculate the new `work_until` date (current date + 1 month)
-        current_date = datetime.now().date()
-        new_work_until = current_date + timedelta(days=30)
+        # Parse the provided date string in DD.MM.YYYY format
+        new_work_until = datetime.strptime(date, '%d.%m.%Y').date()
 
         # Set the `work_until` and `status` fields
         cursor.execute('''
@@ -487,20 +483,33 @@ def deactivate_admin(tg_id):
 
 # Assuming you have a function check_if_deliveryman defined in your repository
 # Update it to include status check
-def check_deliveryman_activity(tgid) -> bool:
+def check_deliveryman_activity(tg_id) -> bool:
     try:
         conn = db.connection
         cursor = conn.cursor()
 
         # Check if the user is a deliveryman and has status set to True
         cursor.execute('''
-            SELECT status FROM "deliverymen"
+            SELECT status, work_until FROM "deliverymen"
             WHERE tg_id = %s AND status = True
-        ''', (tgid,))
+        ''', (tg_id,))
         result = cursor.fetchone()
 
         if result:
-            return True
+            status, work_until = result
+            current_date = datetime.now().date()
+
+            # If work_until is less than or equal to the current date, ban the deliveryman and update status
+            if work_until <= current_date:
+                cursor.execute('''
+                    UPDATE "deliverymen"
+                    SET status = False
+                    WHERE tg_id = %s
+                ''', (tg_id,))
+                conn.commit()
+                return False
+            else:
+                return True
         else:
             return False
 

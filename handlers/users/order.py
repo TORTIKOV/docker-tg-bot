@@ -95,7 +95,7 @@ async def command_help(message: types.Message) -> None:
                                           'Если Вы уже подали заявку на становление доставщиком'
                                           'то в скором времени вас внесут в список\n\n'
                                           'Если Вы являетесь доставщиком и видите это сообщение,'
-                                          'то пишите в ЦПП(@OnDaWayHC)',
+                                          'то пишите -> @OnDaWayHC',
                                      reply_markup=reply_markup)
         else:
             await message.answer(f'Сначала надо зарегестрироваться!', reply_markup=types.ReplyKeyboardMarkup().add(
