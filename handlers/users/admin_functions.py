@@ -132,6 +132,7 @@ async def update_deliveryman_info(message: types.Message, state: FSMContext) -> 
         # Update the deliveryman's information in the database using the update_deliveryman function
         if update_deliveryman(deliveryman_tg_id, date):
             await message.reply("Информация о Deliveryman успешно обновлена.")
+            await bot.send_message(text=f'Вам одобрен статус доставщика до {date}(не включительно)! Пропишите "/main_menu" и можете приступать к работе', chat_id=deliveryman_tg_id)
         else:
             await message.reply("Ошибка при обновлении информации Deliveryman.")
 
