@@ -42,6 +42,10 @@ async def command_help(message: types.Message) -> None:
 
                     orders = cursor.fetchall()
 
+                    if not orders:
+                        await message.answer("Пока нет заказов.")
+                        return
+
                     for order in orders:
                         order_id, order_place, delivery_option, until_date, until_time, payment_method, comment, dorm, floor, room = order
 
