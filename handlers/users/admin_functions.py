@@ -1,9 +1,10 @@
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from loader import dp
+import db
 from repository import check_tgid_in_db, add_deliveryman_to_db, check_if_deliveryman, update_deliveryman, \
     ban_deliveryman, unban_deliveryman, import_deliverymen, update_order_status, get_client_id_by_order_id,\
-    update_deliveryman_username, add_admin_to_db, get_active_admins, check_if_admin, deactivate_admin
+    update_deliveryman_username, add_admin_to_db, get_active_admins, check_if_admin, deactivate_admin, check_deliveryman_activity
 import logging
 from config.config import admin_id, deliverymen_id
 from loader import bot
@@ -465,6 +466,43 @@ async def wait_deactivate_admin_id(message: types.Message, state: FSMContext):
 
         # Reset the state to None to complete the flow
         await state.reset_state()
+
+    except Exception as err:
+        logging.exception(err)
+
+
+@dp.message_handler(commands=['ping'])
+async def ping_deliverymen(message: types.Message) -> None:
+    try:
+        # Check if the user is an admin or has the authority to send this command
+        tg_id = message.from_user.id
+
+        # Check if the user is an admin
+        if not check_if_admin(tg_id):
+            await message.reply("Недостаточно авторитета для использования данной команды.")
+            return
+
+        conn = db.connection
+        cursor = conn.cursor()
+
+        # Count the number of orders with 'Создан' status
+        cursor.execute('''
+            SELECT COUNT(*) FROM "order"
+            WHERE status = 'Создан'
+        ''')
+        order_count = cursor.fetchone()[0]
+
+        # Get the list of active deliverymen
+        cursor.execute('''
+            SELECT tg_id FROM "deliverymen"
+            WHERE status = True
+        ''')
+        deliverymen = cursor.fetchall()
+
+        # Send a message to each active deliveryman with the order count
+        for deliveryman in deliverymen:
+            deliveryman_tg_id = deliveryman[0]
+            await bot.send_message(deliveryman_tg_id, f"Количество активных заказов: {order_count}!\nМожно залутать чего-нибудь")
 
     except Exception as err:
         logging.exception(err)
