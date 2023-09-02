@@ -351,7 +351,7 @@ async def update_deliveryman_tg_id(message: types.Message, state: FSMContext) ->
     try:
         order_id = message.text.strip()
 
-        if update_order_status(order_id):
+        if update_order_status(order_id, "Отменен"):
             await message.reply(f"Статус заказа {order_id} изменен на 'Отменен'")
             await bot.send_message(get_client_id_by_order_id(order_id), f"Статус заказа {order_id} изменен на 'Отменен")
         else:
