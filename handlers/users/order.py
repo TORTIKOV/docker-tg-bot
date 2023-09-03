@@ -183,7 +183,7 @@ async def start_order(callback_query: types.CallbackQuery):
                 inline_keyboard_deliveryman = types.InlineKeyboardMarkup(row_width=1)
                 cancel_execution = types.InlineKeyboardButton(text="Отказаться", callback_data=f"cancel_execution:{order_id}")
                 take_pakage = types.InlineKeyboardButton(text="Забрал посылку", callback_data=f"package_taken:{order_id},{client_message_id}")
-                question = types.InlineKeyboardButton(text="Вопрос заказчику", callback_data=f"question_to_deliveryman:{order_id}")
+                question = types.InlineKeyboardButton(text="Вопрос заказчику", callback_data=f"question_to_user:{order_id}")
                 inline_keyboard_deliveryman.add(take_pakage, question, cancel_execution)
                 await bot.delete_message(callback_query.from_user.id, callback_query.message.message_id)
                 await bot.send_message(callback_query.from_user.id, form_info, reply_markup=inline_keyboard_deliveryman)
@@ -473,7 +473,7 @@ from aiogram.dispatcher import FSMContext
 # Handler for the "Вопрос доставщику" button
 
 
-@dp.callback_query_handler(lambda query: query.data == 'question_to_deliveryman')
+@dp.callback_query_handler(lambda c: c.data.startswith('question_to_user'))
 async def ping_deliverymen(callback_query: types.CallbackQuery, state: FSMContext) -> None:
     try:
         # Get the order ID from the callback data
