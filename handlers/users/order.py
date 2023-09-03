@@ -6,7 +6,9 @@ from repository import check_tgid_in_db, check_if_deliveryman, check_deliveryman
 from aiogram import types
 from app import db
 import datetime
+from datetime import timedelta
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+
 
 
 def username_acceptance(message: types.Message) -> bool:
@@ -52,7 +54,9 @@ async def command_help(message: types.Message) -> None:
                         # Check if the order's until_date and until_time are not expired
                         current_datetime = datetime.datetime.now()
                         order_datetime = datetime.datetime.combine(until_date, until_time)
-                        if order_datetime <= current_datetime:
+                        three_hours_from_now = current_datetime + timedelta(hours=3)
+
+                        if order_datetime <= three_hours_from_now: # Из-за дельты в бд
                             # Update the status of the expired order to "Просрочен"
                             cursor.execute('''
                                             UPDATE "order"
@@ -179,7 +183,8 @@ async def start_order(callback_query: types.CallbackQuery):
                 inline_keyboard_deliveryman = types.InlineKeyboardMarkup(row_width=1)
                 cancel_execution = types.InlineKeyboardButton(text="Отказаться", callback_data=f"cancel_execution:{order_id}")
                 take_pakage = types.InlineKeyboardButton(text="Забрал посылку", callback_data=f"package_taken:{order_id},{client_message_id}")
-                inline_keyboard_deliveryman.add(take_pakage, cancel_execution)
+                question = types.InlineKeyboardButton(text="Вопрос заказчику", callback_data=f"question_to_deliveryman:{order_id}")
+                inline_keyboard_deliveryman.add(take_pakage, question, cancel_execution)
                 await bot.delete_message(callback_query.from_user.id, callback_query.message.message_id)
                 await bot.send_message(callback_query.from_user.id, form_info, reply_markup=inline_keyboard_deliveryman)
 
@@ -463,3 +468,54 @@ async def contact_deliveryman_callback(callback_query: types.CallbackQuery):
     except Exception as e:
         print("Error processing contact_deliveryman callback:", e)
 
+
+from aiogram.dispatcher import FSMContext
+# Handler for the "Вопрос доставщику" button
+
+
+@dp.callback_query_handler(lambda query: query.data == 'question_to_deliveryman')
+async def ping_deliverymen(callback_query: types.CallbackQuery, state: FSMContext) -> None:
+    try:
+        # Get the order ID from the callback data
+        order_id = callback_query.data.split(':')[1]
+
+        # Send a message asking for a question related to the order
+        question_message = f"Введите текст вопроса для заказа {order_id}.\n" \
+                           "Заказчик свяжется с Вами, как только появится возможность."
+        await callback_query.message.answer(question_message)
+
+        # Set the state to handle the user's question input
+        await state.set_state("wait_question")
+        await state.update_data(order_id=order_id)
+
+        # Store the order ID in the state for future reference
+
+    except Exception as err:
+        logging.exception(err)
+
+
+@dp.message_handler(state="wait_question", content_types=types.ContentTypes.TEXT)
+async def process_user_question(message: types.Message, state: FSMContext) -> None:
+    try:
+        # Get the order ID from the state (you need to set it when handling the button click)
+        order_id = await state.get_data()
+
+        # Get the client ID from the "order" table using the order_id
+        conn = db.connection
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT client_id FROM "order" WHERE id = %s
+        ''', (order_id,))
+        client_id = cursor.fetchone()[0]
+
+        # Send the user's question to the client
+        await bot.send_message(client_id, f"Вопрос по заказу {order_id}:\n\n{message.text}\n\nСвяжитесь с доставщиком!")
+
+        # Notify the deliveryman that the question has been sent
+        await message.answer("Ваш вопрос был отправлен заказчику.")
+
+        # Reset the state
+        await state.reset_state()
+
+    except Exception as err:
+        logging.exception(err)
