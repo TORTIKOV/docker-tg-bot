@@ -497,8 +497,14 @@ async def ping_deliverymen(callback_query: types.CallbackQuery, state: FSMContex
 @dp.message_handler(state="wait_question", content_types=types.ContentTypes.TEXT)
 async def process_user_question(message: types.Message, state: FSMContext) -> None:
     try:
-        # Get the order ID from the state (you need to set it when handling the button click)
-        order_id = await state.get_data()
+        # Get the order ID from the state
+        data = await state.get_data()
+        order_id = data.get('order_id')
+
+        if not order_id:
+            await message.answer("Произошла ошибка. Пожалуйста, попробуйте снова.")
+            await state.reset_state()
+            return
 
         # Get the client ID from the "order" table using the order_id
         conn = db.connection
@@ -506,13 +512,16 @@ async def process_user_question(message: types.Message, state: FSMContext) -> No
         cursor.execute('''
             SELECT client_id FROM "order" WHERE id = %s
         ''', (order_id,))
-        client_id = cursor.fetchone()[0]
+        client_id = cursor.fetchone()
 
-        # Send the user's question to the client
-        await bot.send_message(client_id, f"Вопрос по заказу {order_id}:\n\n{message.text}\n\nСвяжитесь с доставщиком!")
+        if client_id:
+            # Send the user's question to the client
+            await bot.send_message(client_id[0], f"Вопрос по заказу {order_id}:\n\n{message.text}\n\nСвяжитесь с доставщиком!")
 
-        # Notify the deliveryman that the question has been sent
-        await message.answer("Ваш вопрос был отправлен заказчику.")
+            # Notify the deliveryman that the question has been sent
+            await message.answer("Ваш вопрос был отправлен заказчику.")
+        else:
+            await message.answer("Не удалось найти заказчика для этого заказа.")
 
         # Reset the state
         await state.reset_state()
