@@ -498,11 +498,16 @@ async def ping_deliverymen(message: types.Message) -> None:
             WHERE status = True
         ''')
         deliverymen = cursor.fetchall()
-
+        counter = 0
         # Send a message to each active deliveryman with the order count
         for deliveryman in deliverymen:
             deliveryman_tg_id = deliveryman[0]
-            await bot.send_message(deliveryman_tg_id, f"Количество активных заказов: {order_count}!\nМожно залутать чего-нибудь")
-
+            try:
+                await bot.send_message(deliveryman_tg_id, f"Количество активных заказов: {order_count}!\nМожно залутать чего-нибудь")
+                counter +=1
+            except Exception as err:
+                print(deliveryman_tg_id)
+                logging.exception(err)
+        print(f"pinged {counter} users")
     except Exception as err:
         logging.exception(err)
