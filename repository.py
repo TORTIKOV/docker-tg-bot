@@ -3,6 +3,23 @@ from datetime import datetime, timedelta
 from config.config import deliverymen_id
 
 
+def update_start_date_for_user(tgid):
+    conn = db.connection
+    cursor = conn.cursor()
+
+    # Get the current date
+    current_date = datetime.datetime.now().date()
+
+    cursor.execute('''
+        UPDATE "user" 
+        SET start_date = %s
+        WHERE tgid = %s
+    ''', (current_date, tgid))
+
+    conn.commit()
+    cursor.close()
+
+
 def add_user_to_db(name, tgid, phone, dorm, floor, room):
     conn = db.connection
     cursor = conn.cursor()
@@ -12,6 +29,7 @@ def add_user_to_db(name, tgid, phone, dorm, floor, room):
     ''', (name, tgid, phone, dorm, floor, room))
     conn.commit()
     cursor.close()
+    update_start_date_for_user(tgid)
 
 
 def check_tgid_in_db(tgid):
