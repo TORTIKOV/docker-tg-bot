@@ -510,20 +510,27 @@ async def process_user_question(message: types.Message, state: FSMContext) -> No
             await state.reset_state()
             return
 
-        # Get the client ID from the "order" table using the order_id
+        # Get the client ID and deliveryman ID from the "order" table using the order_id
         conn = db.connection
         cursor = conn.cursor()
         cursor.execute('''
-            SELECT client_id FROM "order" WHERE id = %s
+            SELECT client_id, deliveryman_id FROM "order" WHERE id = %s
         ''', (order_id,))
-        client_id = cursor.fetchone()
+        result = cursor.fetchone()
 
-        if client_id:
+        if result:
+            client_id, deliveryman_id = result
+
+            cursor.execute('''
+                        SELECT username FROM "deliverymen"
+                        WHERE tg_id = %s
+                    ''', (deliveryman_id,))
+            deliveryman_username = cursor.fetchone()[0]
             # Send the user's question to the client
-            await bot.send_message(client_id[0], f"Вопрос по заказу {order_id}:\n\n{message.text}\n\nСвяжитесь с доставщиком!")
+            await bot.send_message(client_id, f"Вопрос по заказу {order_id}:\n\n{message.text}\n\nСвяжитесь с доставщиком!->@{deliveryman_username}")
 
             # Notify the deliveryman that the question has been sent
-            await message.answer("Ваш вопрос был отправлен заказчику.")
+            await message.answer("Ваш вопрос был отправлен заказчику и доставщику.")
         else:
             await message.answer("Не удалось найти заказчика для этого заказа.")
 
