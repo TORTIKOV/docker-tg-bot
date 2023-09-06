@@ -8,7 +8,7 @@ def update_start_date_for_user(tgid):
     cursor = conn.cursor()
 
     # Get the current date
-    current_date = datetime.datetime.now().date()
+    current_date = datetime.now().date()
 
     cursor.execute('''
         UPDATE "user" 
