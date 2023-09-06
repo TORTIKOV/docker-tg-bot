@@ -313,9 +313,13 @@ async def cancel_execution(callback_query: types.CallbackQuery):
                                         reply_markup=inline_keyboard_user)
 
             inline_keyboard_deliveryman = types.InlineKeyboardMarkup(row_width=1)
+
+            question = types.InlineKeyboardButton(text="Вопрос заказчику", callback_data=f"question_to_user:{order_id}")
             order_complete = types.InlineKeyboardButton(text="Завершить заказ",
                                                         callback_data=f"order_completed:{order_id},{client_message_id}")
-            inline_keyboard_deliveryman.add(order_complete)
+
+            inline_keyboard_deliveryman.add(order_complete, question)
+
             await bot.delete_message(callback_query.from_user.id, callback_query.message.message_id)
             await bot.send_message(callback_query.from_user.id, form_info, reply_markup=inline_keyboard_deliveryman)
 
