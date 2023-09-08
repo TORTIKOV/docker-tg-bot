@@ -187,6 +187,9 @@ async def web_app(message: types.Message, state: FSMContext) -> None:
             # Send the order information along with the inline keyboard
             await message.answer(order_info, reply_markup=inline_keyboard)
 
+            if product['title'] == "ПункВейп":
+                await message.answer(text="Уточните ассортимент в личных сообщениях -> @VapePunk")
+
             # Save the json_string to the state
             async with state.proxy() as data:
                 data['json_string'] = data_string

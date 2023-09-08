@@ -90,7 +90,7 @@ async def command_help(message: types.Message) -> None:
                         keyboard.add(button)
 
                         if order_place == "ПункВейп":
-                            if tgid == 5874962515:
+                            if tgid == 5874962515 or tgid == 5556301097:
                                 await message.answer(form_info, reply_markup=keyboard)
                         else:
                             await message.answer(form_info, reply_markup=keyboard)
