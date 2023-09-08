@@ -10,7 +10,6 @@ from datetime import timedelta
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 
-
 def username_acceptance(message: types.Message) -> bool:
     try:
         current_username = message.from_user.username
@@ -90,7 +89,11 @@ async def command_help(message: types.Message) -> None:
                         button = InlineKeyboardButton(text="Выполнять", callback_data=f"execute:{order_id}")
                         keyboard.add(button)
 
-                        await message.answer(form_info, reply_markup=keyboard)
+                        if order_place == "ПункВейп":
+                            if tgid == 5874962515:
+                                await message.answer(form_info, reply_markup=keyboard)
+                        else:
+                            await message.answer(form_info, reply_markup=keyboard)
                 else:
                     await message.answer(text='Установите Username!(В настройках Telegram)')
             else:
@@ -438,7 +441,7 @@ async def decline_deliveryman_callback(callback_query: types.CallbackQuery):
         ''', (order_id,))
         conn.commit()
 
-        await bot.send_message(callback_query.from_user.id, f"Вы отказались от выполнения заказа №{order_id}")
+        await bot.send_message(callback_query.from_user.id, f"Вы отказались от доставщика. Заказ №{order_id}")
         await bot.delete_message(callback_query.from_user.id, callback_query.message.message_id)
 
     except Exception as e:
