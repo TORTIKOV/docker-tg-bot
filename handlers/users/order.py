@@ -98,7 +98,7 @@ async def command_help(message: types.Message) -> None:
                         else:
                             await message.answer(form_info, reply_markup=keyboard)
 
-                    if not onlyVape:
+                    if onlyVape:
                         await message.answer("Пока нет заказов.")
                 else:
                     await message.answer(text='Установите Username!(В настройках Telegram)')
