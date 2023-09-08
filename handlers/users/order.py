@@ -47,11 +47,12 @@ async def command_help(message: types.Message) -> None:
                         await message.answer("Пока нет заказов.")
                         return
 
-                    all_orders_are_punkvape = all(order[1] == 'ПункВейп' for order in orders)
+                    onlyVape = True
 
                     for order in orders:
                         order_id, order_place, delivery_option, until_date, until_time, payment_method, comment, dorm, floor, room = order
-
+                        if order_place != "ПункВейп":
+                            onlyVape = False
                         # Check if the order's until_date and until_time are not expired
                         current_datetime = datetime.datetime.now()
                         order_datetime = datetime.datetime.combine(until_date, until_time)
@@ -96,9 +97,9 @@ async def command_help(message: types.Message) -> None:
                                 await message.answer(form_info, reply_markup=keyboard)
                         else:
                             await message.answer(form_info, reply_markup=keyboard)
-                            if all_orders_are_punkvape:
-                                await message.answer("Заказов нет.")
 
+                    if not onlyVape:
+                        await message.answer("Пока нет заказов.")
                 else:
                     await message.answer(text='Установите Username!(В настройках Telegram)')
             else:
