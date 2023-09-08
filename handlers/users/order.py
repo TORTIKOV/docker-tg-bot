@@ -47,6 +47,8 @@ async def command_help(message: types.Message) -> None:
                         await message.answer("Пока нет заказов.")
                         return
 
+                    all_orders_are_punkvape = all(order['order_place'] == 'ПункВейп' for order in orders)
+
                     for order in orders:
                         order_id, order_place, delivery_option, until_date, until_time, payment_method, comment, dorm, floor, room = order
 
@@ -94,6 +96,9 @@ async def command_help(message: types.Message) -> None:
                                 await message.answer(form_info, reply_markup=keyboard)
                         else:
                             await message.answer(form_info, reply_markup=keyboard)
+                            if all_orders_are_punkvape:
+                                await message.answer("Заказов нет.")
+
                 else:
                     await message.answer(text='Установите Username!(В настройках Telegram)')
             else:
