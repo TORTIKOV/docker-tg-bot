@@ -367,7 +367,6 @@ async def update_deliveryman_tg_id(message: types.Message, state: FSMContext) ->
 @dp.message_handler(commands=['get_username'])
 async def get_username(message: types.Message, state: FSMContext):
     try:
-        # Get the username of the user who sent the message
         username = message.from_user.username
 
         if username:
@@ -399,26 +398,22 @@ async def wait_admin_id(message: types.Message, state: FSMContext):
     try:
         admin_tg_id = message.text.strip()
 
-        # Check if the entered ID is valid
         if not admin_tg_id.isdigit():
             await message.reply("Некорректный ID админа. Пожалуйста, введите корректный ID.")
             return
 
         admin_tg_id = int(admin_tg_id)
 
-        # Check if the admin is already in the database
         if check_if_admin(admin_tg_id):
             await message.reply("Этот админ уже есть в базе.")
             await state.reset_state()
             return
 
-        # Add the new admin to the "moderator" table with status set to True
         if add_admin_to_db(admin_tg_id):
             await message.reply(f"Админ с ID {admin_tg_id} успешно добавлен.")
         else:
             await message.reply("Ошибка при добавлении админа.")
 
-        # Reset the state to None to complete the flow
         await state.reset_state()
 
     except Exception as err:
@@ -445,26 +440,22 @@ async def wait_deactivate_admin_id(message: types.Message, state: FSMContext):
     try:
         admin_tg_id = message.text.strip()
 
-        # Check if the entered ID is valid
         if not admin_tg_id.isdigit():
             await message.reply("Некорректный ID админа. Пожалуйста, введите корректный ID.")
             return
 
         admin_tg_id = int(admin_tg_id)
 
-        # Check if the admin is in the database and has status True
         if not check_if_admin(admin_tg_id):
             await message.reply("Админ с таким ID не найден.")
             await state.reset_state()
             return
 
-        # Deactivate the admin by setting their status to False
         if deactivate_admin(admin_tg_id):
             await message.reply(f"Админ с ID {admin_tg_id} успешно деактивирован.")
         else:
             await message.reply("Ошибка при деактивации админа.")
 
-        # Reset the state to None to complete the flow
         await state.reset_state()
 
     except Exception as err:
@@ -474,10 +465,8 @@ async def wait_deactivate_admin_id(message: types.Message, state: FSMContext):
 @dp.message_handler(commands=['ping'])
 async def ping_deliverymen(message: types.Message) -> None:
     try:
-        # Check if the user is an admin or has the authority to send this command
         tg_id = message.from_user.id
 
-        # Check if the user is an admin
         if not check_if_admin(tg_id):
             await message.reply("Недостаточно авторитета для использования данной команды.")
             return
@@ -485,21 +474,18 @@ async def ping_deliverymen(message: types.Message) -> None:
         conn = db.connection
         cursor = conn.cursor()
 
-        # Count the number of orders with 'Создан' status
         cursor.execute('''
             SELECT COUNT(*) FROM "order"
             WHERE status = 'Создан'
         ''')
         order_count = cursor.fetchone()[0]
 
-        # Get the list of active deliverymen
         cursor.execute('''
             SELECT tg_id FROM "deliverymen"
             WHERE status = True
         ''')
         deliverymen = cursor.fetchall()
         counter = 0
-        # Send a message to each active deliveryman with the order count
         for deliveryman in deliverymen:
             deliveryman_tg_id = deliveryman[0]
             try:
