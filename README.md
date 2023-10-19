@@ -5,6 +5,7 @@
 ## Структура проекта
 
 ```
+-> *flyway* - папка с миграциями и кнофигурацией
 -> *config* — глобальные для проекта вещи, вроде настроек (`config.py`)
 -> *handlers* - здесь размещены функции, отвечающие за обработку входящих сообщений, команд и других событий от пользователей
 -> *db* — инициализация базы и сессии (скорее всего в процессе работы над проектом изменяться не будет)
@@ -21,7 +22,7 @@ python -m venv venv
 
 * В виртуальном окружении установите зависимости:
 ~~~console
-pip install -r app/requirements.txt
+pip install -r requirements.txt
 ~~~
 
 * В корневой папке проекта создайте файл .env со следующими переменными:
@@ -31,8 +32,13 @@ BOT_TOKEN =
 POSTGRES_DB = 
 POSTGRES_USER = 
 POSTGRES_PASSWORD = 
-POSTGRES_HOST = 
 POSTGRES_PORT = 
+
+FLYWAY_URL=jdbc:postgresql://db:5432/your_db_name
+FLYWAY_USER=
+FLYWAY_PASSWORD=
+FLYWAY_LOCATIONS=filesystem:/flyway/sql
+
 ~~~
 
 * Запустите контейнер с базой данных следующей командой:
