@@ -40,7 +40,7 @@ FLYWAY_PASSWORD=
 FLYWAY_LOCATIONS=filesystem:/flyway/sql
 
 ~~~
-
+BOT_TOKEN можно получить в телеграме при создании бота: [Гайд](https://learn.microsoft.com/en-us/azure/bot-service/bot-service-channel-connect-telegram?view=azure-bot-service-4.0), [BotFather](https://t.me/BotFather)
 * Запустите контейнер с базой данных следующей командой:
 ~~~console
 docker-compose up --build
