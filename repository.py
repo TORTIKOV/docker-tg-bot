@@ -1,5 +1,5 @@
 import db
-from datetime import datetime, timedelta
+from datetime import datetime
 from config.config import deliverymen_id
 
 

@@ -1,10 +1,10 @@
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from loader import dp
-import db
+from app import db
 from repository import check_tgid_in_db, add_deliveryman_to_db, check_if_deliveryman, update_deliveryman, \
     ban_deliveryman, unban_deliveryman, import_deliverymen, update_order_status, get_client_id_by_order_id,\
-    update_deliveryman_username, add_admin_to_db, get_active_admins, check_if_admin, deactivate_admin, check_deliveryman_activity
+    update_deliveryman_username, add_admin_to_db, get_active_admins, check_if_admin, deactivate_admin
 import logging
 from config.config import admin_id, deliverymen_id
 from loader import bot

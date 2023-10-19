@@ -12,11 +12,21 @@ services:
       - "5432:5432"
 
   app:
-    build: .
+    build:
+      context: .
     command: sh -c "python -m app"
     env_file:
       - ./.env
     restart: always
+    depends_on:
+      - db
+
+  flyway:
+    build:
+      context: flyway
+    command: ["migrate"]
+    env_file:
+      - ./.env
     depends_on:
       - db
 
