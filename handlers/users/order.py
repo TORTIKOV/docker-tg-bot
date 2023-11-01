@@ -47,12 +47,8 @@ async def command_help(message: types.Message) -> None:
                         await message.answer("Пока нет заказов.")
                         return
 
-                    onlyVape = True
-
                     for order in orders:
                         order_id, order_place, delivery_option, until_date, until_time, payment_method, comment, dorm, floor, room = order
-                        if order_place != "ПункВейп":
-                            onlyVape = False
                         # Check if the order's until_date and until_time are not expired
                         current_datetime = datetime.datetime.now()
                         order_datetime = datetime.datetime.combine(until_date, until_time)
@@ -92,14 +88,7 @@ async def command_help(message: types.Message) -> None:
                         button = InlineKeyboardButton(text="Выполнять", callback_data=f"execute:{order_id}")
                         keyboard.add(button)
 
-                        if order_place == "ПункВейп":
-                            if tgid == 5874962515 or tgid == 5556301097:
-                                await message.answer(form_info, reply_markup=keyboard)
-                        else:
-                            await message.answer(form_info, reply_markup=keyboard)
-
-                    if onlyVape:
-                        await message.answer("Пока нет заказов.")
+                        await message.answer(form_info, reply_markup=keyboard)
                 else:
                     await message.answer(text='Установите Username!(В настройках Telegram)')
             else:

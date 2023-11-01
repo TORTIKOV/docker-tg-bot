@@ -12,7 +12,7 @@ def update_start_date_for_user(tgid):
     cursor.execute('''
         UPDATE "user" 
         SET start_date = %s
-        WHERE tgid = %s
+        WHERE tg_id = %s
     ''', (current_date, tgid))
 
     conn.commit()
@@ -23,7 +23,7 @@ def add_user_to_db(name, tgid, phone, dorm, floor, room):
     conn = db.connection
     cursor = conn.cursor()
     cursor.execute('''
-        INSERT INTO "user" (name, tgid, phone, dorm, floor, room)
+        INSERT INTO "user" (name, tg_id, phone, dorm, floor, room)
         VALUES (%s, %s, %s, %s, %s, %s)
     ''', (name, tgid, phone, dorm, floor, room))
     conn.commit()
@@ -34,7 +34,7 @@ def add_user_to_db(name, tgid, phone, dorm, floor, room):
 def check_tgid_in_db(tgid):
     conn = db.connection
     cursor = conn.cursor()
-    cursor.execute("SELECT COUNT(*) FROM \"user\" WHERE tgid = %s", (tgid,))
+    cursor.execute("SELECT COUNT(*) FROM \"user\" WHERE tg_id = %s", (tgid,))
     result = cursor.fetchone()
     cursor.close()
     return result[0] > 0
@@ -49,7 +49,7 @@ def update_user_information(tgid, new_name, new_dorm, new_floor, new_room, new_p
         cursor.execute('''
             UPDATE "user"
             SET name = %s, dorm = %s, floor = %s, room = %s, phone = %s
-            WHERE tgid = %s
+            WHERE tg_id = %s
         ''', (new_name, new_dorm, new_floor, new_room, new_phone, tgid))
         conn.commit()
         cursor.close()

@@ -1,19 +1,31 @@
--- V1__Create_deliverymen.sql
+CREATE TABLE "user" (
+    tg_id BIGINT PRIMARY KEY,
+    name VARCHAR(30),
+    phone BIGINT,
+    dorm INT,
+    floor INT,
+    room INT,
+    start_date DATE DEFAULT '2023-09-02',
+    business_test TEXT
+);
+
 CREATE TABLE deliverymen (
-    tg_id BIGINT PRIMARY KEY NOT NULL,
+    tg_id BIGINT PRIMARY KEY,
     career_start DATE,
     work_until DATE,
     experience_month SMALLINT,
     complete SMALLINT,
     status BOOLEAN,
-    username VARCHAR(32)
+    username VARCHAR(32),
+    FOREIGN KEY (tg_id) REFERENCES "user"(tg_id)
 );
--- V2__Create_moderator.sql
+
 CREATE TABLE moderator (
     tg_id BIGINT PRIMARY KEY,
-    status BOOLEAN
+    status BOOLEAN,
+    FOREIGN KEY (tg_id) REFERENCES "user"(tg_id)
 );
--- V3__Create_order.sql
+
 CREATE TABLE "order" (
     id BIGSERIAL PRIMARY KEY NOT NULL,
     client_id BIGINT,
@@ -30,15 +42,4 @@ CREATE TABLE "order" (
     dorm INT,
     floor INT,
     room INT
-);
--- V4__Create_user.sql
-CREATE TABLE "user" (
-    name VARCHAR(30),
-    phone BIGINT,
-    dorm INT,
-    tgid BIGINT PRIMARY KEY,
-    floor INT,
-    room INT,
-    start_date DATE DEFAULT '2023-09-02',
-    business_test TEXT
 );
